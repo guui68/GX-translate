@@ -30,7 +30,7 @@
             box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
         }
         .scroll-box {
-            height: 150px;
+            height: 160px;
             overflow-y: auto;
             scrollbar-width: none;
         }
@@ -40,7 +40,7 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             transition: 0.3s;
         }
-        #langCategory { display: none; } /* শুরুতে হাইড থাকবে */
+        #langCategory { display: none; }
     </style>
 </head>
 <body>
@@ -57,29 +57,29 @@
             <h1 class="text-2xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent uppercase tracking-tighter">GX PRO</h1>
             
             <select id="langCategory" onchange="process()" class="bg-indigo-900/30 text-[10px] font-bold px-3 py-1.5 rounded-xl outline-none border border-indigo-500/40 text-indigo-300">
-                <option value="en-bn">ENGLISH ➔ BANGLA</option>
-                <option value="bn-en">BANGLA ➔ ENGLISH</option>
+                <option value="auto">AUTO (EN ↔ BN)</option>
+                <option value="alt">ALTERNATIVE MEANINGS</option>
             </select>
         </header>
 
         <div class="mb-6 relative">
             <div id="statusLabel" class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-2 ml-2">Phonetic Output</div>
             <div class="input-style rounded-2xl relative shadow-inner">
-                <div id="outputBox" class="scroll-box p-5 text-xl font-semibold leading-relaxed break-words text-slate-100 pr-16">...</div>
+                <div id="outputBox" class="scroll-box p-5 text-xl font-semibold leading-relaxed break-words text-slate-100 pr-16 whitespace-pre-line">...</div>
                 <button onclick="copyResult()" class="absolute bottom-4 right-4 bg-indigo-600 hover:bg-indigo-500 text-white text-[9px] font-bold px-3 py-2 rounded-xl transition-all active:scale-90 shadow-lg">COPY</button>
             </div>
         </div>
 
         <div class="relative">
-            <div id="inputLabel" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">Enter Text</div>
+            <div id="inputLabel" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">Enter Word/Sentence</div>
             <div class="input-style rounded-2xl overflow-hidden">
                 <textarea id="userInput" oninput="process()" placeholder="এখানে লিখুন..." 
-                    class="w-full h-[150px] bg-transparent p-5 text-lg outline-none resize-none text-slate-300 placeholder:text-slate-700"></textarea>
+                    class="w-full h-[160px] bg-transparent p-5 text-lg outline-none resize-none text-slate-300 placeholder:text-slate-700"></textarea>
             </div>
         </div>
 
         <footer class="mt-8 flex justify-between items-center text-[8px] text-slate-600 font-bold uppercase tracking-[0.3em]">
-            <span>Hybrid API Engine</span>
+            <span>Deep Engine API v3.0</span>
             <span>&copy; 2026 GX STUDIO</span>
         </footer>
     </div>
@@ -96,10 +96,15 @@
             const categorySelect = document.getElementById('langCategory');
             const statusLabel = document.getElementById('statusLabel');
 
-            // Translate অথবা Dictionary মোডে ক্যাটাগরি দেখাবে
             if(mode === 'translate' || mode === 'dictionary') {
                 categorySelect.style.display = 'block';
-                statusLabel.innerText = mode === 'translate' ? "Translation Result" : "Dictionary Meaning";
+                statusLabel.innerText = mode === 'translate' ? "Translation Result" : "Dictionary Detail";
+                // ডিকশনারি মোডে ড্রপডাউন অপশন আপডেট
+                if(mode === 'dictionary') {
+                    categorySelect.innerHTML = `<option value="auto">AUTO (EN ↔ BN)</option><option value="alt">ALTERNATIVE MEANINGS</option>`;
+                } else {
+                    categorySelect.innerHTML = `<option value="en-bn">ENGLISH ➔ BANGLA</option><option value="bn-en">BANGLA ➔ ENGLISH</option>`;
+                }
             } else {
                 categorySelect.style.display = 'none';
                 statusLabel.innerText = "Phonetic Output";
@@ -119,11 +124,17 @@
                 } else {
                     fetchPhonetic(input);
                 }
-            } else {
-                // Translate এবং Dictionary মোডে ক্যাটাগরি অনুযায়ী কাজ করবে
+            } else if (currentMode === 'translate') {
+                const target = document.getElementById('langCategory').value === 'en-bn' ? 'bn' : 'en';
+                fetchSimple(input, target);
+            } else if (currentMode === 'dictionary') {
                 const cat = document.getElementById('langCategory').value;
-                const target = cat === 'en-bn' ? 'bn' : 'en';
-                fetchTranslation(input, target);
+                if(cat === 'alt') {
+                    fetchAlternatives(input);
+                } else {
+                    const target = /[\u0980-\u09FF]/.test(input) ? 'en' : 'bn';
+                    fetchSimple(input, target);
+                }
             }
         }
 
@@ -136,21 +147,36 @@
             } catch (e) { document.getElementById('outputBox').innerText = "Error..."; }
         }
 
-        async function fetchTranslation(text, target) {
+        async function fetchSimple(text, target) {
             try {
                 const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURI(text)}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 document.getElementById('outputBox').innerText = data[0][0][0];
-            } catch (e) { document.getElementById('outputBox').innerText = "Translation error..."; }
+            } catch (e) { document.getElementById('outputBox').innerText = "Error..."; }
+        }
+
+        async function fetchAlternatives(text) {
+            try {
+                const target = /[\u0980-\u09FF]/.test(text) ? 'en' : 'bn';
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=at&q=${encodeURI(text)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data[1] && data[1][0] && data[1][0][1]) {
+                    const alts = data[1][0][1].join(", ");
+                    document.getElementById('outputBox').innerText = `প্রধান অর্থ: ${data[0][0][0]}\n\nঅন্যান্য অর্থসমূহ:\n${alts}`;
+                } else {
+                    document.getElementById('outputBox').innerText = data[0][0][0];
+                }
+            } catch (e) { document.getElementById('outputBox').innerText = "তথ্য পাওয়া যায়নি..."; }
         }
 
         function copyResult() {
             const text = document.getElementById('outputBox').innerText;
             if (text === "...") return;
             navigator.clipboard.writeText(text);
-            const btn = event.target;
-            btn.innerText = "COPIED!";
+            const btn = event.target; btn.innerText = "COPIED!";
             setTimeout(() => { btn.innerText = "COPY"; }, 1500);
         }
     </script>
