@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GX TRANSLATE PRO - 3 MODES</title>
+    <title>GX TRANSLATE PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Hind+Siliguri:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -40,6 +40,7 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             transition: 0.3s;
         }
+        #langCategory { display: none; } /* শুরুতে হাইড থাকবে */
     </style>
 </head>
 <body>
@@ -52,26 +53,25 @@
             <button id="btnDictionary" onclick="setMode('dictionary')" class="mode-btn w-full py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all">Dictionary</button>
         </div>
 
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">GX PRO</h1>
+        <header class="flex justify-between items-center mb-6 h-10">
+            <h1 class="text-2xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent uppercase tracking-tighter">GX PRO</h1>
             
-            <select id="langCategory" onchange="process()" class="bg-indigo-900/20 text-[10px] font-bold px-3 py-1.5 rounded-xl outline-none border border-indigo-500/20 text-indigo-300">
-                <option value="bn-en">BANGLA ↔ ENGLISH</option>
-                <option value="hi-en">HINDI ↔ ENGLISH</option>
-                <option value="ar-en">ARABIC ↔ ENGLISH</option>
+            <select id="langCategory" onchange="process()" class="bg-indigo-900/30 text-[10px] font-bold px-3 py-1.5 rounded-xl outline-none border border-indigo-500/40 text-indigo-300">
+                <option value="en-bn">ENGLISH ➔ BANGLA</option>
+                <option value="bn-en">BANGLA ➔ ENGLISH</option>
             </select>
         </header>
 
         <div class="mb-6 relative">
             <div id="statusLabel" class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-2 ml-2">Phonetic Output</div>
-            <div class="input-style rounded-2xl relative">
+            <div class="input-style rounded-2xl relative shadow-inner">
                 <div id="outputBox" class="scroll-box p-5 text-xl font-semibold leading-relaxed break-words text-slate-100 pr-16">...</div>
                 <button onclick="copyResult()" class="absolute bottom-4 right-4 bg-indigo-600 hover:bg-indigo-500 text-white text-[9px] font-bold px-3 py-2 rounded-xl transition-all active:scale-90 shadow-lg">COPY</button>
             </div>
         </div>
 
         <div class="relative">
-            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">Enter Text Here</div>
+            <div id="inputLabel" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">Enter Text</div>
             <div class="input-style rounded-2xl overflow-hidden">
                 <textarea id="userInput" oninput="process()" placeholder="এখানে লিখুন..." 
                     class="w-full h-[150px] bg-transparent p-5 text-lg outline-none resize-none text-slate-300 placeholder:text-slate-700"></textarea>
@@ -79,7 +79,7 @@
         </div>
 
         <footer class="mt-8 flex justify-between items-center text-[8px] text-slate-600 font-bold uppercase tracking-[0.3em]">
-            <span>Powered by Multi-Engine API</span>
+            <span>Hybrid API Engine</span>
             <span>&copy; 2026 GX STUDIO</span>
         </footer>
     </div>
@@ -91,13 +91,19 @@
         function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            const labels = {
-                'phonetic': 'Phonetic Output',
-                'translate': 'Full Translation',
-                'dictionary': 'Dictionary Meaning'
-            };
             document.getElementById('btn' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
-            document.getElementById('statusLabel').innerText = labels[mode];
+            
+            const categorySelect = document.getElementById('langCategory');
+            const statusLabel = document.getElementById('statusLabel');
+
+            // Translate অথবা Dictionary মোডে ক্যাটাগরি দেখাবে
+            if(mode === 'translate' || mode === 'dictionary') {
+                categorySelect.style.display = 'block';
+                statusLabel.innerText = mode === 'translate' ? "Translation Result" : "Dictionary Meaning";
+            } else {
+                categorySelect.style.display = 'none';
+                statusLabel.innerText = "Phonetic Output";
+            }
             process();
         }
 
@@ -113,10 +119,11 @@
                 } else {
                     fetchPhonetic(input);
                 }
-            } else if (currentMode === 'translate') {
-                fetchTranslation(input);
-            } else if (currentMode === 'dictionary') {
-                fetchDictionary(input);
+            } else {
+                // Translate এবং Dictionary মোডে ক্যাটাগরি অনুযায়ী কাজ করবে
+                const cat = document.getElementById('langCategory').value;
+                const target = cat === 'en-bn' ? 'bn' : 'en';
+                fetchTranslation(input, target);
             }
         }
 
@@ -129,29 +136,13 @@
             } catch (e) { document.getElementById('outputBox').innerText = "Error..."; }
         }
 
-        async function fetchTranslation(text) {
+        async function fetchTranslation(text, target) {
             try {
-                const target = /[\u0980-\u09FF]/.test(text) ? 'en' : 'bn';
                 const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURI(text)}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 document.getElementById('outputBox').innerText = data[0][0][0];
-            } catch (e) { document.getElementById('outputBox').innerText = "Translation Error"; }
-        }
-
-        async function fetchDictionary(text) {
-            // Dictionary API logic
-            try {
-                const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${text}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                if(data[0]) {
-                    const def = data[0].meanings[0].definitions[0].definition;
-                    document.getElementById('outputBox').innerText = `Meaning: ${def}`;
-                } else {
-                    fetchTranslation(text); // Fallback to translation if word not found
-                }
-            } catch (e) { fetchTranslation(text); }
+            } catch (e) { document.getElementById('outputBox').innerText = "Translation error..."; }
         }
 
         function copyResult() {
