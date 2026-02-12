@@ -3,75 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bangla to Phonetic Converter</title>
+    <title>GX TRANSLATE - Premium Transliteration</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', 'Hind Siliguri', sans-serif; background: #f8fafc; }
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        body {
+            font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .custom-textarea {
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            resize: none;
+        }
+        .custom-textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="flex items-center justify-center p-6">
 
-    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
-        <div class="bg-indigo-600 p-6 text-white text-center">
-            <h1 class="text-2xl font-bold tracking-tight">Bangla To English Transliteration</h1>
-            <p class="text-indigo-100 text-sm mt-1">বাংলা লিখুন, ইংরেজি উচ্চারণ নিন</p>
+    <div class="glass-card max-w-3xl w-full overflow-hidden">
+        <div class="bg-indigo-600 p-8 text-center relative">
+            <h1 class="text-4xl font-extrabold text-white tracking-widest uppercase">GX TRANSLATE</h1>
+            <p class="text-indigo-100 mt-2 font-medium">Fast · Accurate · Premium Transliteration</p>
+            
+            <button onclick="copyText()" class="absolute top-6 right-6 bg-white/20 hover:bg-white text-white hover:text-indigo-600 px-5 py-2 rounded-full text-sm font-bold backdrop-blur-md transition-all border border-white/30 active:scale-95 shadow-lg">
+                COPY RESULT
+            </button>
         </div>
 
-        <div class="p-6 space-y-6">
-            <div class="relative group">
-                <label class="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-2 block">English Phonetic Output</label>
-                <div id="englishOutput" class="w-full min-h-[100px] p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl text-xl text-slate-700 break-words leading-relaxed">
-                    Output will appear here...
+        <div class="p-8 space-y-8">
+            <div class="relative">
+                <label class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3 block ml-1">Result (English/Bangla)</label>
+                <div id="outputText" class="w-full min-h-[120px] p-6 bg-slate-50 border-2 border-indigo-100 rounded-3xl text-2xl text-slate-800 font-semibold break-words leading-snug shadow-inner">
+                    ...
                 </div>
-                <button onclick="copyToClipboard()" class="absolute top-8 right-3 bg-white shadow-md border border-slate-200 hover:bg-indigo-50 text-indigo-600 px-4 py-2 rounded-xl text-sm font-medium transition-all active:scale-95">
-                    Copy Text
-                </button>
             </div>
 
             <div>
-                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Type Bangla Here</label>
-                <textarea id="banglaInput" oninput="convert()" placeholder="এখানে বাংলা লিখুন..." 
-                    class="w-full h-40 p-4 bg-white border-2 border-slate-100 rounded-2xl text-xl focus:border-indigo-500 focus:ring-0 transition-all outline-none shadow-inner resize-none"></textarea>
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block ml-1">Type or Paste Here</label>
+                <textarea id="mainInput" oninput="processConversion()" placeholder="বাংলায় লিখুন অথবা English উচ্চারণ পেস্ট করুন..." 
+                    class="custom-textarea w-full h-44 p-6 rounded-3xl text-xl text-slate-700 outline-none"></textarea>
             </div>
         </div>
 
-        <div class="bg-slate-50 p-4 text-center text-slate-400 text-xs">
-            Premium Transliteration Tool &copy; 2026
+        <div class="bg-slate-50 p-4 text-center text-slate-400 text-[10px] font-bold tracking-widest">
+            DESIGNED FOR HIGH QUALITY TRANSCRIPTION &copy; 2026
         </div>
     </div>
 
     <script>
-        // Simple Phonetic Mapping (এটি আরও বড় করা সম্ভব)
-        const map = {
-            'অ': 'o', 'আ': 'a', 'ই': 'i', 'ঈ': 'ee', 'উ': 'u', 'ঊ': 'u', 'এ': 'e', 'ঐ': 'oi', 'ও': 'o', 'ঔ': 'ou',
-            'ক': 'k', 'খ': 'kh', 'গ': 'g', 'ঘ': 'gh', 'ঙ': 'ng', 'চ': 'ch', 'ছ': 'chh', 'জ': 'j', 'ঝ': 'jh', 'ঞ': 'nyo',
-            'ট': 't', 'ঠ': 'th', 'ড': 'd', 'ঢ': 'dh', 'ণ': 'n', 'ত': 't', 'থ': 'th', 'দ': 'd', 'ধ': 'dh', 'ন': 'n',
-            'প': 'p', 'ফ': 'f', 'ব': 'b', 'ভ': 'bh', 'ম': 'm', 'য': 'y', 'র': 'r', 'ল': 'l', 'শ': 'sh', 'ষ': 'sh', 'স': 's', 'হ': 'h',
-            'া': 'a', 'ি': 'i', 'ী': 'ee', 'ু': 'u', 'ূ': 'u', 'ে': 'e', 'ৈ': 'oi', 'ো': 'o', 'ৌ': 'ou', '্': ''
+        // Phonetic Mapping (Dictionary)
+        const bnToEn = { 'আ': 'a', 'মি': 'mi', 'অ': 'o', 'ই': 'i', 'ব': 'ba', 'লা': 'la', 'ন': 'n', 'ক': 'k', 'ভ': 'bh', 'ত': 't' };
+        const enToBn = { 'ami': 'আমি', 'amar': 'আমার', 'bhat': 'ভাত', 'khao': 'খাও', 'tumi': 'তুমি' };
+
+        // বানান অটো-কারেকশন (ভুল হলে ঠিক করার লজিক)
+        const autoCorrect = {
+            'ammi': 'ami',
+            'vaat': 'bhat',
+            'banglaa': 'bangla'
         };
 
-        function convert() {
-            let input = document.getElementById('banglaInput').value;
-            let output = "";
-            
-            for (let char of input) {
-                output += map[char] || char; // যদি ম্যাপে না থাকে তবে যা আছে তাই দেখাবে (যেমন স্পেস)
+        function processConversion() {
+            let input = document.getElementById('mainInput').value.trim().toLowerCase();
+            let outputDisplay = document.getElementById('outputText');
+            let result = "";
+
+            if (!input) {
+                outputDisplay.innerText = "...";
+                return;
             }
-            
-            const display = document.getElementById('englishOutput');
-            display.innerText = output || "Output will appear here...";
-            display.classList.toggle('text-slate-400', !output);
-            display.classList.toggle('text-slate-700', !!output);
+
+            // যদি ইনপুট বাংলা হয়
+            if (/[\u0980-\u09FF]/.test(input)) {
+                for (let char of input) {
+                    result += bnToEn[char] || char;
+                }
+            } 
+            // যদি ইনপুট ইংলিশ হয় (অটো কারেকশন সহ)
+            else {
+                // বানান ঠিক করা
+                if (autoCorrect[input]) input = autoCorrect[input];
+                
+                // ডিকশনারি চেক
+                result = enToBn[input] || "Converting...";
+                
+                // যদি ডিকশনারিতে না থাকে তবে সাধারণ লজিক (উদাহরণস্বরূপ)
+                if(result === "Converting...") {
+                    result = input; // এখানে আরও অ্যাডভান্স লজিক বসানো যাবে
+                }
+            }
+
+            outputDisplay.innerText = result;
         }
 
-        function copyToClipboard() {
-            const text = document.getElementById('englishOutput').innerText;
-            if(text === "Output will appear here...") return;
+        function copyText() {
+            const text = document.getElementById('outputText').innerText;
+            if(text === "...") return;
             
             navigator.clipboard.writeText(text).then(() => {
-                alert("Copied to clipboard!");
+                alert("Copied successfully!");
             });
         }
     </script>
