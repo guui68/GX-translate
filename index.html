@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GX TRANSLATE PRO - Optimized Version</title>
+    <title>GX TRANSLATE PRO - Smart Phonetic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -47,7 +47,6 @@
 <body>
 
     <div class="main-card p-6 md:p-8 shadow-2xl">
-        
         <div class="flex gap-1 mb-6 p-1 bg-black/40 rounded-2xl border border-white/5">
             <button id="btnPhonetic" onclick="setMode('phonetic')" class="mode-btn active w-full py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all">Phonetic</button>
             <button id="btnTranslate" onclick="setMode('translate')" class="mode-btn w-full py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all">Translate</button>
@@ -56,9 +55,7 @@
 
         <header class="flex justify-between items-center mb-6 h-10">
             <h1 class="text-2xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent uppercase tracking-tighter">GX PRO</h1>
-            
-            <select id="langCategory" onchange="process()" class="bg-indigo-900/30 text-[10px] font-bold px-3 py-1.5 rounded-xl outline-none border border-indigo-500/40 text-indigo-300">
-            </select>
+            <select id="langCategory" onchange="process()" class="bg-indigo-900/30 text-[10px] font-bold px-3 py-1.5 rounded-xl outline-none border border-indigo-500/40 text-indigo-300"></select>
         </header>
 
         <div class="mb-6 relative">
@@ -86,38 +83,59 @@
     <script>
         let currentMode = 'phonetic';
 
-        // সংশোধিত ম্যাপিং: য/য় এবং জ/য এর পার্থক্য স্পষ্ট করা হয়েছে
-        const bnToEnMap = {
-            'অ':'o','আ':'a','ই':'i','ঈ':'ee','উ':'u','ঊ':'u','এ':'e','ঐ':'oi','ও':'o','ঔ':'ou',
+        const consonants = {
             'ক':'k','খ':'kh','গ':'g','ঘ':'gh','ঙ':'ng','চ':'ch','ছ':'chh','জ':'j','ঝ':'jh','ঞ':'nyo',
             'ট':'t','ঠ':'th','ড':'d','ঢ':'dh','ণ':'n','ত':'t','থ':'th','দ':'d','ধ':'dh','ন':'n',
             'প':'p','ফ':'f','ব':'b','ভ':'bh','ম':'m','য':'z','র':'r','ল':'l','শ':'sh','ষ':'sh',
-            'স':'s','হ':'h','ড়':'r','ঢ়':'rh','য়':'y','ৎ':'t','ং':'ng','ঃ':'h','ঁ':'n',
-            'া':'a','ি':'i','ী':'ee','ু':'u','ূ':'u','ে':'e','ৈ':'oi','ো':'o','ৌ':'ou','্':'',
-            '\u09BC':'' 
+            'স':'s','হ':'h','ড়':'r','ঢ়':'rh','য়':'y','ৎ':'t'
+        };
+        const vowels = {
+            'অ':'o','আ':'a','ই':'i','ঈ':'ee','উ':'u','ঊ':'u','এ':'e','ঐ':'oi','ও':'o','ঔ':'ou'
+        };
+        const vowelSigns = {
+            'া':'a','ি':'i','ী':'ee','ু':'u','ূ':'u','ে':'e','ৈ':'oi','ো':'o','ৌ':'ou','্':''
         };
 
         function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
-            
             const cat = document.getElementById('langCategory');
             const status = document.getElementById('statusLabel');
-
-            if(mode === 'phonetic') {
-                cat.style.display = 'none';
-                status.innerText = "Phonetic Output";
-            } else if(mode === 'translate') {
+            if(mode === 'phonetic') { cat.style.display = 'none'; status.innerText = "Phonetic Output"; }
+            else if(mode === 'translate') {
                 cat.style.display = 'block';
                 cat.innerHTML = `<option value="en-bn">ENGLISH ➔ BANGLA</option><option value="bn-en">BANGLA ➔ ENGLISH</option>`;
                 status.innerText = "Full Translation";
-            } else if(mode === 'dictionary') {
+            } else {
                 cat.style.display = 'block';
                 cat.innerHTML = `<option value="auto">AUTO (EN ↔ BN)</option><option value="alt">ALTERNATIVE MEANINGS</option>`;
                 status.innerText = "Dictionary Detail";
             }
             process();
+        }
+
+        function bnToEnPhonetic(text) {
+            let res = "";
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                let nextChar = text[i + 1];
+
+                if (consonants[char]) {
+                    res += consonants[char];
+                    // যদি পরের বর্ণটি কার-চিহ্ন বা হসন্ত না হয়, তবে 'o' যোগ হবে
+                    if (!vowelSigns[nextChar] && nextChar !== ' ') {
+                        res += 'o';
+                    }
+                } else if (vowels[char]) {
+                    res += vowels[char];
+                } else if (vowelSigns[char]) {
+                    res += vowelSigns[char];
+                } else {
+                    res += char;
+                }
+            }
+            return res.replace(/oo/g, 'o'); // অতিরিক্ত 'o' রিমুভ করতে
         }
 
         async function process() {
@@ -126,43 +144,27 @@
             if (!input) { output.innerText = "..."; return; }
 
             if (currentMode === 'phonetic') {
-                // বাংলা ইনপুট দিলে রোমানাইজেশন (উচ্চারণ) দেখাবে
                 if (/[\u0980-\u09FF]/.test(input)) {
-                    let res = ""; 
-                    for (let char of input) { 
-                        res += bnToEnMap[char] !== undefined ? bnToEnMap[char] : char; 
-                    }
-                    output.innerText = res;
+                    output.innerText = bnToEnPhonetic(input);
                 } else {
-                    // ইংলিশ ইনপুট দিলে বাংলা ফোনেটিক রূপান্তর
                     fetchPhonetic(input);
                 }
             } else if (currentMode === 'translate') {
                 const target = document.getElementById('langCategory').value === 'en-bn' ? 'bn' : 'en';
                 fetchSimple(input, target);
-            } else if (currentMode === 'dictionary') {
+            } else {
                 const cat = document.getElementById('langCategory').value;
-                if(cat === 'alt') {
-                    fetchAlternatives(input);
-                } else {
-                    const target = /[\u0980-\u09FF]/.test(input) ? 'en' : 'bn';
-                    fetchSimple(input, target);
-                }
+                const target = /[\u0980-\u09FF]/.test(input) ? 'en' : 'bn';
+                cat === 'alt' ? fetchAlternatives(input) : fetchSimple(input, target);
             }
         }
 
         async function fetchPhonetic(text) {
             try {
-                // itc=bn-t-i0-und দিয়ে সরাসরি বাংলা টাইপিং রেজাল্ট আনা
                 const url = `https://inputtools.google.com/request?text=${encodeURIComponent(text)}&itc=bn-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=demopage`;
                 const res = await fetch(url);
                 const data = await res.json();
-                if (data[0] === "SUCCESS") {
-                    let result = data[1][0][1][0];
-                    // এখানে একটি ছোট্ট লজিক: 'y' এর জন্য 'য়' এবং 'z' এর জন্য 'য' এর প্রাধান্য দেয়া হয়েছে
-                    // তবে Google API অনেক সময় নিজেই এটি হ্যান্ডেল করে। 
-                    document.getElementById('outputBox').innerText = result;
-                }
+                document.getElementById('outputBox').innerText = data[1][0][1][0];
             } catch (e) { document.getElementById('outputBox').innerText = "Error..."; }
         }
 
@@ -182,17 +184,16 @@
                 const res = await fetch(url);
                 const data = await res.json();
                 if (data[1] && data[1][0] && data[1][0][1]) {
-                    const alts = data[1][0][1].join(", ");
-                    document.getElementById('outputBox').innerText = `প্রধান অর্থ: ${data[0][0][0]}\n\nঅন্যান্য অর্থসমূহ:\n${alts}`;
+                    document.getElementById('outputBox').innerText = `প্রধান: ${data[0][0][0]}\n\nঅন্যান্য: ${data[1][0][1].join(", ")}`;
                 } else {
                     document.getElementById('outputBox').innerText = data[0][0][0];
                 }
-            } catch (e) { document.getElementById('outputBox').innerText = "তথ্য পাওয়া যায়নি..."; }
+            } catch (e) { document.getElementById('outputBox').innerText = "Not found..."; }
         }
 
         function copyResult() {
             const text = document.getElementById('outputBox').innerText;
-            if (text === "..." || text === "") return;
+            if (text === "...") return;
             navigator.clipboard.writeText(text);
             const btn = event.target; 
             btn.innerText = "COPIED!";
