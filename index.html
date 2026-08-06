@@ -7,161 +7,57 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { 
-            --main: #1a2a6c; 
-            --main-accent: #2a3d8f;
-            --text: #333; 
-            --border-color: #1a2a6c; 
-        }
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            background: linear-gradient(135deg, #e9ecef 0%, #dbe2ef 100%); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 20px 15px; 
-            min-height: 100vh;
-        }
+        :root { --main: #1a2a6c; --text: #333; --border-color: #000; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #e9ecef; display: flex; flex-direction: column; align-items: center; padding: 15px; }
         
         .receipt-container { 
-            width: 100%; 
-            max-width: 450px; 
-            background: #fff; 
-            padding: 30px 25px 25px 25px; 
-            border-radius: 16px; 
-            box-shadow: 0 20px 50px rgba(26, 42, 108, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            position: relative;
-            overflow: hidden;
-            box-sizing: border-box;
+            width: 100%; max-width: 450px; background: #fff; padding: 30px; 
+            border-radius: 5px; box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            border-top: 15px solid var(--main); position: relative;
         }
 
-        /* সবার উপরে প্রিমিয়াম রাউন্ড শেপ ডিজাইন */
-        .header-decor {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 14px;
-            background: linear-gradient(90deg, #1a2a6c, #b21f1f, #fdbb2d);
-        }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 28px; color: var(--main); letter-spacing: 2px; }
 
-        .top-badge {
-            width: 70px;
-            height: 8px;
-            background: var(--main);
-            margin: 0 auto 15px auto;
-            border-radius: 10px;
-            opacity: 0.8;
-        }
+        .info-box div { display: flex; margin-bottom: 8px; border-bottom: 2px solid #555; padding-bottom: 3px; }
+        .info-box label { font-weight: bold; width: 110px; color: #000; }
+        input { border: none; outline: none; width: 100%; font-family: inherit; font-size: 15px; background: transparent; }
 
-        .header { text-align: center; margin-bottom: 22px; }
-        .header h1 { 
-            margin: 0; 
-            font-size: 26px; 
-            color: var(--main); 
-            letter-spacing: 1.5px; 
-            font-weight: 800;
-            text-transform: uppercase;
-        }
+        .add-btn { background: #f1f3f5; color: var(--main); border: 1px dashed var(--main); padding: 8px; width: 100%; margin-bottom: 15px; cursor: pointer; font-weight: bold; }
 
-        .info-box div { 
-            display: flex; 
-            margin-bottom: 10px; 
-            border-bottom: 1.5px solid #ccc; 
-            padding-bottom: 4px; 
-            transition: border-color 0.3s;
-        }
-        .info-box div:focus-within {
-            border-bottom-color: var(--main);
-        }
-        .info-box label { font-weight: bold; width: 100px; color: #1a2a6c; font-size: 14px; }
-        input { border: none; outline: none; width: 100%; font-family: inherit; font-size: 15px; background: transparent; color: #111; }
-
-        .add-btn { 
-            background: #f0f4f9; 
-            color: var(--main); 
-            border: 1.5px dashed var(--main); 
-            padding: 10px; 
-            width: 100%; 
-            margin-bottom: 18px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .add-btn:hover { background: #e2eaf4; }
-
-        table { width: 100%; border-collapse: separate; border-spacing: 0; border: 2px solid var(--main); border-radius: 8px; overflow: hidden; }
-        th { background: var(--main); color: #fff; padding: 10px 12px; text-align: left; font-size: 15px; }
-        td { padding: 10px 12px; border-bottom: 1px solid #e0e0e0; position: relative; background: #fff; }
+        table { width: 100%; border-collapse: collapse; border: 2px solid var(--main); }
+        th { background: var(--main); color: #fff; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1.5px solid var(--border-color); position: relative; }
         
         .amt-col { text-align: right; font-weight: bold; width: 120px; }
         .reading-text { font-size: 11px; color: #0047ab; font-weight: 800; position: absolute; left: 10px; bottom: 2px; pointer-events: none; }
-        #calc-link { color: #0056b3; cursor: pointer; display: block; font-size: 11px; font-weight: bold; text-decoration: underline; }
+        #calc-link { color: blue; cursor: pointer; display: block; font-size: 10px; font-weight: bold; }
 
-        .del-btn { position: absolute; left: -25px; top: 50%; transform: translateY(-50%); color: #dc3545; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .del-btn { position: absolute; left: -25px; top: 50%; transform: translateY(-50%); color: red; border: none; background: none; cursor: pointer; font-weight: bold; }
 
-        .total-box { 
-            margin-top: 18px; 
-            padding: 12px 16px; 
-            background: #f4f7fc; 
-            border-left: 6px solid var(--main); 
-            border-radius: 6px;
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.03);
-        }
-        .total-box span { font-weight: bold; color: #444; font-size: 16px; }
-        .total-box h2 { margin: 0; color: var(--main); font-size: 24px; font-weight: 800; }
+        .total-box { margin-top: 15px; padding: 15px; background: #f8f9fa; border-left: 8px solid var(--main); border-bottom: 2px solid #000; display: flex; justify-content: space-between; align-items: center; }
+        .in-word-box { width: 100%; margin-top: 10px; font-size: 18px; color: #000; font-weight: 900; text-align: left; }
 
-        .in-word-box { 
-            width: 100%; 
-            margin-top: 12px; 
-            font-size: 15px; 
-            color: #1a2a6c; 
-            font-weight: 800; 
-            text-align: left; 
-            padding-left: 2px;
-        }
-
-        /* পপআপ ডিজাইন */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-card { background: #fff; padding: 25px; border-radius: 16px; width: 300px; border-top: 8px solid var(--main); box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
-        .modal-card h3 { margin-top: 0; text-align: center; color: var(--main); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 18px; }
+        /* পপআপ ডিজাইন - আগের ক্লাসিক স্টাইল */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: #fff; padding: 25px; border-radius: 12px; width: 300px; border-top: 10px solid var(--main); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .modal-card h3 { margin-top: 0; text-align: center; color: var(--main); border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .modal-card label { display: block; margin-top: 10px; font-weight: bold; font-size: 13px; color: #555; }
-        .modal-card input, .modal-card select { border: 1.5px solid #ddd; padding: 10px; border-radius: 6px; margin-top: 5px; width: 93%; background: #f9f9f9; font-size: 15px; outline: none; }
-        .modal-card input:focus { border-color: var(--main); }
+        .modal-card input, .modal-card select { border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-top: 5px; width: 93%; background: #f9f9f9; font-size: 16px; }
         
-        .modal-result { background: #eef3fc; margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; border: 1px dashed var(--main); font-weight: bold; color: var(--main); }
+        .modal-result { background: #f0f4ff; margin-top: 15px; padding: 10px; border-radius: 5px; text-align: center; border: 1px dashed var(--main); font-weight: bold; }
 
         .btn-group { width: 100%; max-width: 450px; margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
-        .btn { 
-            flex: 1; 
-            min-width: 95px; 
-            padding: 12px 8px; 
-            border: none; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            color: #fff; 
-            cursor: pointer; 
-            font-size: 14px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn:active { transform: scale(0.97); }
-        .btn-save { background: var(--main); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .btn { flex: 1; min-width: 100px; padding: 12px; border: none; border-radius: 5px; font-weight: bold; color: #fff; cursor: pointer; font-size: 14px; }
+        .btn-save { background: var(--main); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 15px; }
 
         .hide-for-capture { display: none !important; }
-        .editable-label { width: 100%; border: none; outline: none; background: transparent; cursor: pointer; font-size: 14px; color: #222; }
+        .editable-label { width: 100%; border: none; outline: none; background: transparent; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="receipt-container" id="receipt">
-    <div class="header-decor"></div>
-    <div class="top-badge"></div>
     <div class="header"><h1>ভাড়ার রশিদ</h1></div>
 
     <div class="info-box">
@@ -192,7 +88,7 @@
         <tfoot>
             <tr class="item-row" style="background: #fff5f5;">
                 <td style="color: #d32f2f; font-weight: bold;">(-) জমা</td>
-                <td class="amt-col"><input type="number" id="joma" class="minus" onfocus="clearZero(this)" onblur="resetZero(this)" oninput="calc()" value="0" style="text-align: right; color: #d32f2f; font-weight: bold;"></td>
+                <td class="amt-col"><input type="number" id="joma" class="minus" onfocus="clearZero(this)" onblur="resetZero(this)" oninput="calc()" value="0" style="text-align: right; color: #d32f2f;"></td>
             </tr>
         </tfoot>
     </table>
@@ -235,8 +131,8 @@
 </div>
 
 <div class="btn-group">
-    <button class="btn" style="background:#222;" onclick="process('download')">ছবি</button>
-    <button class="btn" style="background:#e63946;" onclick="process('pdf')">পিডিএফ</button>
+    <button class="btn" style="background:#333;" onclick="process('download')">ছবি</button>
+    <button class="btn" style="background:#dc3545;" onclick="process('pdf')">পিডিএফ</button>
     <button class="btn" style="background:#25D366;" onclick="process('share')">শেয়ার</button>
     <button class="btn" id="tg-btn" style="background:#0088cc;" onclick="process('telegram')">টেলিগ্রাম বোট</button>
 </div>
