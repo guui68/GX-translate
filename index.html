@@ -3,133 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ভাড়াটিয়া হিসাব ম্যানেজমেন্ট</title>
+    <title>ভাড়াটিয়া হিসাব - এক্সেল শিট</title>
+    <!-- HTML to Canvas Library for Image Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 10px;
+            background-color: #e6e6e6;
         }
         h2 {
             text-align: center;
-            color: #1a2b4c;
+            color: #107c41; /* Excel Green Color */
+            margin-bottom: 10px;
         }
-        .landlord-info {
-            max-width: 400px;
-            margin: 0 auto 20px auto;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .landlord-info label {
+        .landlord-bar {
+            background: #107c41;
+            color: white;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-weight: bold;
-            color: #1a2b4c;
+            border-radius: 4px 4px 0 0;
         }
-        .landlord-info input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        .landlord-bar input {
+            padding: 4px;
+            border: none;
+            border-radius: 2px;
+            font-weight: bold;
         }
-        .table-container {
+        
+        /* Excel Table Grid Styling */
+        .excel-container {
             overflow-x: auto;
             background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border: 1px solid #d4d4d4;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         table {
-            width: 100%;
             border-collapse: collapse;
-            min-width: 1000px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
+            width: 100%;
+            min-width: 1100px;
+            font-size: 13px;
         }
         th {
-            background-color: #1a2b4c;
+            background-color: #217346;
             color: white;
+            border: 1px solid #107c41;
+            padding: 6px;
+            font-weight: 600;
+        }
+        td {
+            border: 1px solid #d4d4d4;
+            padding: 0;
+            text-align: center;
+            background: #fff;
+        }
+        td.row-header {
+            background-color: #e6e6e6;
+            font-weight: bold;
+            color: #333;
+            width: 30px;
+        }
+        tr:nth-child(even) td {
+            background-color: #f9fbf9;
         }
         input {
-            width: 90%;
-            padding: 5px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            width: 100%;
+            height: 28px;
+            border: none;
+            outline: none;
             text-align: center;
+            background: transparent;
+            font-size: 13px;
+            font-family: inherit;
         }
+        input:focus {
+            background-color: #e8f2ea;
+            box-shadow: inset 0 0 0 2px #107c41;
+        }
+
+        /* Buttons */
         .btn-group {
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
             justify-content: center;
         }
         button {
-            padding: 10px 15px;
+            padding: 8px 15px;
             border: none;
-            border-radius: 5px;
+            border-radius: 3px;
             cursor: pointer;
             font-weight: bold;
             color: white;
+            font-size: 13px;
         }
-        .btn-all { background-color: #28a745; }
-        .btn-unit { background-color: #17a2b8; }
-        .btn-receipt { background-color: #1a2b4c; color: #fff; }
-        button:hover { opacity: 0.9; }
+        .btn-all { background-color: #107c41; }
+        .btn-unit { background-color: #0078d4; }
+        .btn-receipt { background-color: #1b365d; color: #fff; padding: 4px 8px; font-size: 11px; }
+
+        /* Hidden Receipt Container for Image Snapshot */
+        #receipt-card-wrapper {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+        }
+        .receipt-card {
+            width: 350px;
+            background: #ffffff;
+            border: 2px solid #1b365d;
+            padding: 15px;
+            box-sizing: border-box;
+            color: #000;
+        }
+        .receipt-title {
+            text-align: center;
+            color: #1b365d;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        .receipt-meta-table, .receipt-calc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .receipt-meta-table td {
+            border: none;
+            border-bottom: 1px solid #1b365d;
+            text-align: left;
+            padding: 4px 0;
+            font-weight: bold;
+        }
+        .receipt-calc-table th {
+            background: #1b365d;
+            color: white;
+            border: 1px solid #1b365d;
+            padding: 6px;
+        }
+        .receipt-calc-table td {
+            border: 1px solid #1b365d;
+            padding: 6px;
+            text-align: left;
+        }
+        .receipt-calc-table td.amount {
+            text-align: right;
+        }
+        .advance-row td {
+            background-color: #fde8e8;
+            color: #c00000;
+        }
+        .total-box {
+            border-left: 5px solid #1b365d;
+            background: #f4f6f9;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .in-words {
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
 
-    <h2>ভাড়াটিয়া হিসাব ও বিল ম্যানেজমেন্ট</h2>
+    <h2>Microsoft Excel Sheet - ভাড়াটিয়া বিল ড্যাশবোর্ড</h2>
 
-    <div class="landlord-info">
-        <label for="landlordName">বাড়িওয়ালার নাম:</label>
-        <input type="text" id="landlordName" value="রিপন" placeholder="বাড়িওয়ালার নাম লিখুন">
+    <div class="landlord-bar">
+        <span>বাড়িওয়ালার নাম:</span>
+        <input type="text" id="landlordName" value="রিপন">
     </div>
 
-    <div class="table-container">
+    <div class="excel-container">
         <table>
             <thead>
                 <tr>
-                    <th>ক্র.</th>
+                    <th class="row-header">#</th>
                     <th>রুম নং</th>
                     <th>ভাড়াটিয়ার নাম</th>
-                    <th>মাসিক ভাড়া</th>
+                    <th>মাসিক ভাড়া (৳)</th>
                     <th>পূর্বের ইউনিট</th>
                     <th>বর্তমান ইউনিট</th>
-                    <th>বিদ্যুৎ বিল</th>
-                    <th>WiFi বিল</th>
-                    <th>ময়লার বিল</th>
-                    <th>(-) জমা</th>
-                    <th>মোট পাওনা</th>
+                    <th>বিদ্যুৎ বিল (৳)</th>
+                    <th>WiFi বিল (৳)</th>
+                    <th>ময়লার বিল (৳)</th>
+                    <th>(-) জমা (৳)</th>
+                    <th>মোট পাওনা (৳)</th>
                     <th>অ্যাকশন</th>
                 </tr>
             </thead>
-            <tbody id="tenantTable">
-                <!-- ১২ জন ভাড়াটিয়ার সারি -->
-            </tbody>
+            <tbody id="tenantTable"></tbody>
         </table>
     </div>
 
     <div class="btn-group">
-        <button class="btn-all" onclick="sendAllInfo()">১. সকল ইনফরমেশন টেলিগ্রামে পাঠান</button>
+        <button class="btn-all" onclick="sendAllInfoTableImage()">১. সকল ইনফরমেশন (টেবিল ইমেজ) টেলিগ্রামে পাঠান</button>
         <button class="btn-unit" onclick="sendAllUnits()">২. সকল বর্তমান ইউনিট টেলিগ্রামে পাঠান</button>
     </div>
 
+    <!-- গোপন হিডেন কার্ড (যাকে ছবি/Image বানিয়ে টেলিগ্রামে পাঠানো হবে) -->
+    <div id="receipt-card-wrapper">
+        <div class="receipt-card" id="receipt-card">
+            <div class="receipt-title">ভাড়ার রশিদ</div>
+            <table class="receipt-meta-table">
+                <tr><td>তারিখ:</td><td style="text-align: right;" id="r-date">24/07/2026</td></tr>
+                <tr><td>বাড়িওয়ালা:</td><td style="text-align: right;" id="r-landlord">রিপন</td></tr>
+                <tr><td>রুম নং:</td><td style="text-align: right;" id="r-room">১০২</td></tr>
+                <tr><td>ভাড়াটিয়া:</td><td style="text-align: right;" id="r-tenant">জামান</td></tr>
+            </table>
+
+            <table class="receipt-calc-table">
+                <thead>
+                    <tr>
+                        <th>বিবরণ</th>
+                        <th style="text-align: right;">টাকা (৳)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>মাসিক ভাড়া</td><td class="amount" id="r-rent">3100</td></tr>
+                    <tr><td>বিদ্যুৎ বিল</td><td class="amount" id="r-elec">250</td></tr>
+                    <tr><td>WiFi বিল</td><td class="amount" id="r-wifi">150</td></tr>
+                    <tr><td>ময়লার বিল</td><td class="amount" id="r-waste">80</td></tr>
+                    <tr class="advance-row"><td>(-) জমা</td><td class="amount" id="r-advance">0</td></tr>
+                </tbody>
+            </table>
+
+            <div class="total-box">
+                <span>মোট পাওনা:</span>
+                <span id="r-total">3580 ৳</span>
+            </div>
+
+            <div class="in-words" id="r-words">কথায়: তিন হাজার পাঁচ শত আশি টাকা মাত্র</div>
+        </div>
+    </div>
+
     <script>
-        // আপনার বসানো বোড টোকেন ও চ্যাট আইডি
         const BOT_TOKEN = '8780332374:AAG9g_V5tMqjYCWNXIWYYWCJUPNVYIJvetg';
         const CHAT_ID = '6467941734';
 
-        // সংখ্যাকে বাংলা কথায় রূপান্তর করার ফাংশন
         function numberToBanglaWords(num) {
-            if (num === 0) return 'শূন্য';
+            if (num === 0) return 'শূন্য টাকা মাত্র';
             const units = ['', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়'];
             const teens = ['দশ', 'এগারো', 'বারো', 'তেরো', 'চোদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ'];
             const tens = ['', '', 'বিশ', 'ত্রিশ', 'চল্লিশ', 'পঞ্চাশ', 'ষাট', 'সত্তর', 'আশি', 'নব্বই'];
@@ -147,9 +269,7 @@
                     word += teens[n - 10] + ' ';
                     return word;
                 }
-                if (n > 0) {
-                    word += units[n] + ' ';
-                }
+                if (n > 0) word += units[n] + ' ';
                 return word;
             }
 
@@ -159,15 +279,15 @@
                 num %= 1000;
             }
             result += convertLessThanThousand(num);
-            return result.trim() + ' টাকা মাত্র';
+            return 'কথায়: ' + result.trim() + ' টাকা মাত্র';
         }
 
-        // ১২ টি রুমের টেবিল তৈরি
+        // Generate Table Rows
         const tbody = document.getElementById('tenantTable');
         for (let i = 1; i <= 12; i++) {
             const row = `
-                <tr id="row-${i}">
-                    <td>${i}</td>
+                <tr>
+                    <td class="row-header">${i}</td>
                     <td><input type="text" id="room-${i}" value="${100 + i}"></td>
                     <td><input type="text" id="name-${i}" placeholder="নাম"></td>
                     <td><input type="number" id="rent-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
@@ -177,14 +297,13 @@
                     <td><input type="number" id="wifiBill-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
                     <td><input type="number" id="wasteBill-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
                     <td><input type="number" id="advance-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
-                    <td><input type="number" id="total-${i}" placeholder="0" readonly></td>
-                    <td><button class="btn-receipt" onclick="sendReceipt(${i})">রশিদ পাঠান</button></td>
+                    <td><input type="number" id="total-${i}" placeholder="0" readonly style="font-weight:bold; color:#107c41;"></td>
+                    <td><button class="btn-receipt" onclick="generateAndSendReceiptImage(${i})">রশিদ (ছবি)</button></td>
                 </tr>
             `;
             tbody.innerHTML += row;
         }
 
-        // মোট পাওনা হিসাব
         function calculateTotal(index) {
             const rent = parseFloat(document.getElementById(`rent-${index}`).value) || 0;
             const elec = parseFloat(document.getElementById(`elecBill-${index}`).value) || 0;
@@ -196,84 +315,72 @@
             document.getElementById(`total-${index}`).value = total;
         }
 
-        function sendToTelegram(message) {
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            fetch(url, {
+        // Send Blob/Image File to Telegram Photo API
+        function sendImageToTelegram(blob, caption = '') {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', blob, 'receipt.png');
+            if(caption) formData.append('caption', caption);
+
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: CHAT_ID,
-                    text: message,
-                    parse_mode: 'HTML'
-                })
+                body: formData
             })
             .then(res => res.json())
             .then(data => {
-                if(data.ok) alert('টেলিগ্রামে সফলভাবে পাঠানো হয়েছে!');
-                else alert('পাঠাতে সমস্যা হয়েছে। আপনার বোট এবং চ্যাট শুরু করা আছে কিনা তা নিশ্চিত করুন।');
+                if (data.ok) alert('টেলিগ্রামে সফলভাবে ইমেইজ/ছবি পাঠানো হয়েছে!');
+                else alert('ছবি পাঠাতে সমস্যা হয়েছে।');
             })
             .catch(err => alert('ত্রুটি: ' + err));
         }
 
-        // ১. একক ভাড়ার রশিদ পাঠানো
-        function sendReceipt(index) {
+        // ১. রশিদের ছবি বানিয়ে পাঠানো
+        function generateAndSendReceiptImage(index) {
             const today = new Date().toLocaleDateString('en-GB');
             const landlord = document.getElementById('landlordName').value || 'রিপন';
             const room = document.getElementById(`room-${index}`).value || index;
             const name = document.getElementById(`name-${index}`).value || 'N/A';
             
-            const rent = parseFloat(document.getElementById(`rent-${index}`).value) || 0;
-            const elec = parseFloat(document.getElementById(`elecBill-${index}`).value) || 0;
-            const wifi = parseFloat(document.getElementById(`wifiBill-${index}`).value) || 0;
-            const waste = parseFloat(document.getElementById(`wasteBill-${index}`).value) || 0;
-            const advance = parseFloat(document.getElementById(`advance-${index}`).value) || 0;
+            const rent = document.getElementById(`rent-${index}`).value || '0';
+            const elec = document.getElementById(`elecBill-${index}`).value || '0';
+            const wifi = document.getElementById(`wifiBill-${index}`).value || '0';
+            const waste = document.getElementById(`wasteBill-${index}`).value || '0';
+            const advance = document.getElementById(`advance-${index}`).value || '0';
             const total = parseFloat(document.getElementById(`total-${index}`).value) || 0;
-            
-            const inWords = numberToBanglaWords(total);
 
-            const message = `
-<b>═══════════════════</b>
-            <b>ভাড়ার রশিদ</b>
-<b>═══════════════════</b>
-<b>তারিখ:</b> ${today}
-<b>বাড়িওয়ালা:</b> ${landlord}
-<b>রুম নং:</b> ${room}
-<b>ভাড়াটিয়া:</b> ${name}
-<b>───────────────────</b>
-<b>বিবরণ</b>                     <b>টাকা (৳)</b>
-<b>───────────────────</b>
-মাসিক ভাড়া               ${rent}
-বিদ্যুৎ বিল                  ${elec}
-WiFi বিল                    ${wifi}
-ময়লার বিল                 ${waste}
-<b>(-) জমা</b>                    ${advance}
-<b>───────────────────</b>
-<b>মোট পাওনা:          ${total} ৳</b>
-<b>───────────────────</b>
-<b>কথায়: ${inWords}</b>
-            `;
-            sendToTelegram(message);
+            // Fill hidden receipt card
+            document.getElementById('r-date').innerText = today;
+            document.getElementById('r-landlord').innerText = landlord;
+            document.getElementById('r-room').innerText = room;
+            document.getElementById('r-tenant').innerText = name;
+            document.getElementById('r-rent').innerText = rent;
+            document.getElementById('r-elec').innerText = elec;
+            document.getElementById('r-wifi').innerText = wifi;
+            document.getElementById('r-waste').innerText = waste;
+            document.getElementById('r-advance').innerText = advance;
+            document.getElementById('r-total').innerText = total + ' ৳';
+            document.getElementById('r-words').innerText = numberToBanglaWords(total);
+
+            // HTML2Canvas দিয়ে কার্ডটিকে ইমেজে রূপান্তর করা
+            const receiptCard = document.getElementById('receipt-card');
+            html2canvas(receiptCard, { scale: 2 }).then(canvas => {
+                canvas.toBlob(blob => {
+                    sendImageToTelegram(blob, `🧾 রুম ${room} - ${name}-এর ভাড়ার রশিদ`);
+                });
+            });
         }
 
-        // ২. সব ইনফরমেশন একত্রে
-        function sendAllInfo() {
-            const today = new Date().toLocaleDateString('en-GB');
-            let message = `<b>📊 সকল ভাড়াটিয়ার সমন্বিত হিসাব বিবরণী</b>\n📅 তারিখ: ${today}\n\n`;
-            message += `<pre>`;
-            message += `ক্র | রুম | নাম | মোট পাওনা\n`;
-            message += `-------------------------\n`;
-            
-            for (let i = 1; i <= 12; i++) {
-                const room = document.getElementById(`room-${i}`).value || i;
-                const name = document.getElementById(`name-${i}`).value || 'N/A';
-                const total = document.getElementById(`total-${i}`).value || 0;
-                message += `${i} | ${room} | ${name} | ${total} ৳\n`;
-            }
-            message += `</pre>`;
-            sendToTelegram(message);
+        // ২. পুরো এক্সেল টেবিলের ছবি টেলিগ্রামে পাঠানো
+        function sendAllInfoTableImage() {
+            const excelContainer = document.querySelector('.excel-container');
+            html2canvas(excelContainer, { scale: 2 }).then(canvas => {
+                canvas.toBlob(blob => {
+                    sendImageToTelegram(blob, `📊 সকল ভাড়াটিয়ার সমন্বিত হিসাবের শিট`);
+                });
+            });
         }
 
-        // ৩. সব ভাড়াটিয়ার বর্তমান ইউনিট
+        // ৩. সব বর্তমান ইউনিট টেক্সট
         function sendAllUnits() {
             const today = new Date().toLocaleDateString('en-GB');
             let message = `<b>⚡ সকল ভাড়াটিয়ার বর্তমান বিদ্যুৎ ইউনিট</b>\n📅 তারিখ: ${today}\n\n`;
@@ -283,7 +390,16 @@ WiFi বিল                    ${wifi}
                 const currUnit = document.getElementById(`currUnit-${i}`).value || 0;
                 message += `<b>রুম ${room} (${name}):</b> ${currUnit} ইউনিট\n`;
             }
-            sendToTelegram(message);
+
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            }).then(() => alert('ইউনিট তথ্য পাঠানো হয়েছে!'));
         }
     </script>
 </body>
