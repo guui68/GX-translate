@@ -3,104 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GX SMART TRANSLATOR</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>ভাড়াটিয়া হিসাব ম্যানেজমেন্ট</title>
     <style>
-        body { font-family: 'Hind Siliguri', 'Inter', sans-serif; background: #050507; color: #f1f5f9; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 10px; }
-        .main-card { background: #111114; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 28px; width: 100%; max-width: 550px; }
-        .input-style { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); transition: 0.3s; }
-        .scroll-box { height: 160px; overflow-y: auto; scrollbar-width: none; }
-        .scroll-box::-webkit-scrollbar { display: none; }
-        #statusLabel { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+        }
+        h2 {
+            text-align: center;
+            color: #1a2b4c;
+        }
+        .landlord-info {
+            max-width: 400px;
+            margin: 0 auto 20px auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .landlord-info label {
+            font-weight: bold;
+            color: #1a2b4c;
+        }
+        .landlord-info input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .table-container {
+            overflow-x: auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #1a2b4c;
+            color: white;
+        }
+        input {
+            width: 90%;
+            padding: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+        .btn-all { background-color: #28a745; }
+        .btn-unit { background-color: #17a2b8; }
+        .btn-receipt { background-color: #1a2b4c; color: #fff; }
+        button:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 
-    <div class="main-card p-6 md:p-8 shadow-2xl">
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent uppercase">GX PRO</h1>
-            <div id="statusLabel" class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-tighter">API Connected</div>
-        </header>
+    <h2>ভাড়াটিয়া হিসাব ও বিল ম্যানেজমেন্ট</h2>
 
-        <div class="mb-6 relative">
-            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">Smart Translation / Dictionary</div>
-            <div class="input-style rounded-2xl relative shadow-inner">
-                <div id="outputBox" class="scroll-box p-5 text-xl font-semibold leading-relaxed break-words text-indigo-300 pr-16 whitespace-pre-line">...</div>
-                <button onclick="copyResult()" id="copyBtn" class="absolute bottom-4 right-4 bg-indigo-600 hover:bg-indigo-500 text-white text-[9px] font-bold px-3 py-2 rounded-xl transition-all active:scale-90">COPY</button>
-            </div>
-        </div>
+    <div class="landlord-info">
+        <label for="landlordName">বাড়িওয়ালার নাম:</label>
+        <input type="text" id="landlordName" value="রিপন" placeholder="বাড়িওয়ালার নাম লিখুন">
+    </div>
 
-        <div class="relative">
-            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-2">Type Anything (BN/EN)</div>
-            <div class="input-style rounded-2xl overflow-hidden focus-within:border-indigo-500/50">
-                <textarea id="userInput" oninput="autoTranslate()" placeholder="এখানে লিখুন বা পেস্ট করুন..." 
-                    class="w-full h-[160px] bg-transparent p-5 text-lg outline-none resize-none text-slate-300 placeholder:text-slate-700"></textarea>
-            </div>
-        </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ক্র.</th>
+                    <th>রুম নং</th>
+                    <th>ভাড়াটিয়ার নাম</th>
+                    <th>মাসিক ভাড়া</th>
+                    <th>পূর্বের ইউনিট</th>
+                    <th>বর্তমান ইউনিট</th>
+                    <th>বিদ্যুৎ বিল</th>
+                    <th>WiFi বিল</th>
+                    <th>ময়লার বিল</th>
+                    <th>(-) জমা</th>
+                    <th>মোট পাওনা</th>
+                    <th>অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody id="tenantTable">
+                <!-- ১২ জন ভাড়াটিয়ার সারি -->
+            </tbody>
+        </table>
+    </div>
 
-        <footer class="mt-8 flex justify-between items-center text-[8px] text-slate-600 font-bold uppercase tracking-[0.3em]">
-            <span>Deep Neural Engine v4.0</span>
-            <span>&copy; 2026 GX STUDIO</span>
-        </footer>
+    <div class="btn-group">
+        <button class="btn-all" onclick="sendAllInfo()">১. সকল ইনফরমেশন টেলিগ্রামে পাঠান</button>
+        <button class="btn-unit" onclick="sendAllUnits()">২. সকল বর্তমান ইউনিট টেলিগ্রামে পাঠান</button>
     </div>
 
     <script>
-        let typingTimer;
-        const doneTypingInterval = 300; // টাইপ করা থামানোর ৩০০ মিলি-সেকেন্ড পর API কল হবে
+        // আপনার বসানো বোড টোকেন ও চ্যাট আইডি
+        const BOT_TOKEN = '8780332374:AAG9g_V5tMqjYCWNXIWYYWCJUPNVYIJvetg';
+        const CHAT_ID = '6467941734';
 
-        function autoTranslate() {
-            clearTimeout(typingTimer);
-            const input = document.getElementById('userInput').value.trim();
-            const output = document.getElementById('outputBox');
+        // সংখ্যাকে বাংলা কথায় রূপান্তর করার ফাংশন
+        function numberToBanglaWords(num) {
+            if (num === 0) return 'শূন্য';
+            const units = ['', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়'];
+            const teens = ['দশ', 'এগারো', 'বারো', 'তেরো', 'চোদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ'];
+            const tens = ['', '', 'বিশ', 'ত্রিশ', 'চল্লিশ', 'পঞ্চাশ', 'ষাট', 'সত্তর', 'আশি', 'নব্বই'];
 
-            if (!input) {
-                output.innerText = "...";
-                return;
+            function convertLessThanThousand(n) {
+                let word = '';
+                if (n >= 100) {
+                    word += units[Math.floor(n / 100)] + ' শত ';
+                    n %= 100;
+                }
+                if (n >= 20) {
+                    word += tens[Math.floor(n / 10)] + ' ';
+                    n %= 10;
+                } else if (n >= 10) {
+                    word += teens[n - 10] + ' ';
+                    return word;
+                }
+                if (n > 0) {
+                    word += units[n] + ' ';
+                }
+                return word;
             }
 
-            // টাইপ করার সময় সাথে সাথে "Translating..." দেখাবে
-            output.classList.add('opacity-50');
-            
-            typingTimer = setTimeout(async () => {
-                // ইনপুট ভাষা শনাক্ত করা (বাংলা নাকি ইংরেজি)
-                const isBangla = /[\u0980-\u09FF]/.test(input);
-                const targetLang = isBangla ? 'en' : 'bn';
-
-                try {
-                    // Google Translate API (Free)
-                    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&dt=at&q=${encodeURIComponent(input)}`;
-                    
-                    const res = await fetch(url);
-                    const data = await res.json();
-
-                    if (data && data[0]) {
-                        let translatedText = data[0].map(item => item[0]).join("");
-                        
-                        // ডিকশনারি রেজাল্ট (যদি অল্টারনেটিভ মিনিং থাকে)
-                        if (data[1] && data[1][0] && data[1][0][1]) {
-                            const synonyms = data[1][0][1].slice(0, 5).join(", ");
-                            output.innerHTML = `<span class="text-white">${translatedText}</span><br><br><span class="text-sm text-slate-500 font-normal italic">Synonyms: ${synonyms}</span>`;
-                        } else {
-                            output.innerText = translatedText;
-                        }
-                    }
-                } catch (e) {
-                    output.innerText = "Error fetching data...";
-                } finally {
-                    output.classList.remove('opacity-50');
-                }
-            }, doneTypingInterval);
+            let result = '';
+            if (Math.floor(num / 1000) > 0) {
+                result += convertLessThanThousand(Math.floor(num / 1000)) + 'হাজার ';
+                num %= 1000;
+            }
+            result += convertLessThanThousand(num);
+            return result.trim() + ' টাকা মাত্র';
         }
 
-        function copyResult() {
-            const text = document.getElementById('outputBox').innerText;
-            if (text === "..." || text === "") return;
-            navigator.clipboard.writeText(text);
-            const btn = document.getElementById('copyBtn');
-            btn.innerText = "COPIED!";
-            setTimeout(() => { btn.innerText = "COPY"; }, 1500);
+        // ১২ টি রুমের টেবিল তৈরি
+        const tbody = document.getElementById('tenantTable');
+        for (let i = 1; i <= 12; i++) {
+            const row = `
+                <tr id="row-${i}">
+                    <td>${i}</td>
+                    <td><input type="text" id="room-${i}" value="${100 + i}"></td>
+                    <td><input type="text" id="name-${i}" placeholder="নাম"></td>
+                    <td><input type="number" id="rent-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
+                    <td><input type="number" id="prevUnit-${i}" placeholder="0"></td>
+                    <td><input type="number" id="currUnit-${i}" placeholder="0"></td>
+                    <td><input type="number" id="elecBill-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
+                    <td><input type="number" id="wifiBill-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
+                    <td><input type="number" id="wasteBill-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
+                    <td><input type="number" id="advance-${i}" placeholder="0" oninput="calculateTotal(${i})"></td>
+                    <td><input type="number" id="total-${i}" placeholder="0" readonly></td>
+                    <td><button class="btn-receipt" onclick="sendReceipt(${i})">রশিদ পাঠান</button></td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        }
+
+        // মোট পাওনা হিসাব
+        function calculateTotal(index) {
+            const rent = parseFloat(document.getElementById(`rent-${index}`).value) || 0;
+            const elec = parseFloat(document.getElementById(`elecBill-${index}`).value) || 0;
+            const wifi = parseFloat(document.getElementById(`wifiBill-${index}`).value) || 0;
+            const waste = parseFloat(document.getElementById(`wasteBill-${index}`).value) || 0;
+            const advance = parseFloat(document.getElementById(`advance-${index}`).value) || 0;
+            
+            const total = (rent + elec + wifi + waste) - advance;
+            document.getElementById(`total-${index}`).value = total;
+        }
+
+        function sendToTelegram(message) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.ok) alert('টেলিগ্রামে সফলভাবে পাঠানো হয়েছে!');
+                else alert('পাঠাতে সমস্যা হয়েছে। আপনার বোট এবং চ্যাট শুরু করা আছে কিনা তা নিশ্চিত করুন।');
+            })
+            .catch(err => alert('ত্রুটি: ' + err));
+        }
+
+        // ১. একক ভাড়ার রশিদ পাঠানো
+        function sendReceipt(index) {
+            const today = new Date().toLocaleDateString('en-GB');
+            const landlord = document.getElementById('landlordName').value || 'রিপন';
+            const room = document.getElementById(`room-${index}`).value || index;
+            const name = document.getElementById(`name-${index}`).value || 'N/A';
+            
+            const rent = parseFloat(document.getElementById(`rent-${index}`).value) || 0;
+            const elec = parseFloat(document.getElementById(`elecBill-${index}`).value) || 0;
+            const wifi = parseFloat(document.getElementById(`wifiBill-${index}`).value) || 0;
+            const waste = parseFloat(document.getElementById(`wasteBill-${index}`).value) || 0;
+            const advance = parseFloat(document.getElementById(`advance-${index}`).value) || 0;
+            const total = parseFloat(document.getElementById(`total-${index}`).value) || 0;
+            
+            const inWords = numberToBanglaWords(total);
+
+            const message = `
+<b>═══════════════════</b>
+            <b>ভাড়ার রশিদ</b>
+<b>═══════════════════</b>
+<b>তারিখ:</b> ${today}
+<b>বাড়িওয়ালা:</b> ${landlord}
+<b>রুম নং:</b> ${room}
+<b>ভাড়াটিয়া:</b> ${name}
+<b>───────────────────</b>
+<b>বিবরণ</b>                     <b>টাকা (৳)</b>
+<b>───────────────────</b>
+মাসিক ভাড়া               ${rent}
+বিদ্যুৎ বিল                  ${elec}
+WiFi বিল                    ${wifi}
+ময়লার বিল                 ${waste}
+<b>(-) জমা</b>                    ${advance}
+<b>───────────────────</b>
+<b>মোট পাওনা:          ${total} ৳</b>
+<b>───────────────────</b>
+<b>কথায়: ${inWords}</b>
+            `;
+            sendToTelegram(message);
+        }
+
+        // ২. সব ইনফরমেশন একত্রে
+        function sendAllInfo() {
+            const today = new Date().toLocaleDateString('en-GB');
+            let message = `<b>📊 সকল ভাড়াটিয়ার সমন্বিত হিসাব বিবরণী</b>\n📅 তারিখ: ${today}\n\n`;
+            message += `<pre>`;
+            message += `ক্র | রুম | নাম | মোট পাওনা\n`;
+            message += `-------------------------\n`;
+            
+            for (let i = 1; i <= 12; i++) {
+                const room = document.getElementById(`room-${i}`).value || i;
+                const name = document.getElementById(`name-${i}`).value || 'N/A';
+                const total = document.getElementById(`total-${i}`).value || 0;
+                message += `${i} | ${room} | ${name} | ${total} ৳\n`;
+            }
+            message += `</pre>`;
+            sendToTelegram(message);
+        }
+
+        // ৩. সব ভাড়াটিয়ার বর্তমান ইউনিট
+        function sendAllUnits() {
+            const today = new Date().toLocaleDateString('en-GB');
+            let message = `<b>⚡ সকল ভাড়াটিয়ার বর্তমান বিদ্যুৎ ইউনিট</b>\n📅 তারিখ: ${today}\n\n`;
+            for (let i = 1; i <= 12; i++) {
+                const room = document.getElementById(`room-${i}`).value || i;
+                const name = document.getElementById(`name-${i}`).value || 'N/A';
+                const currUnit = document.getElementById(`currUnit-${i}`).value || 0;
+                message += `<b>রুম ${room} (${name}):</b> ${currUnit} ইউনিট\n`;
+            }
+            sendToTelegram(message);
         }
     </script>
 </body>
