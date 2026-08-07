@@ -246,11 +246,48 @@
             tgBtn.innerText = "পাঠানো হচ্ছে...";
             tgBtn.disabled = true;
 
+            // তারিখ, বার ও সময় হিসাব
+            const now = new Date();
+            const days = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+            const dayName = days[now.getDay()];
+            
+            // সময় (১২ ঘণ্টার ফরম্যাটে)
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            const timeStr = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+            // বর্তমান পাঠাবার তারিখ (DD/MM/YYYY)
+            const sendDate = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+
+            // রশিদের ভেতরের তথ্য
+            const rDate = document.getElementById('date-input').value || "উল্লেখ নেই";
+            const roomNo = document.getElementById('room-input').value || "উল্লেখ নেই";
+            const tenantName = document.getElementById('tenant-input').value || "উল্লেখ নেই";
+            const totalAmt = document.getElementById('total-text').innerText || "0 ৳";
+
+            // সুন্দর ডিজাইনের টেলিগ্রাম ক্যাप्शन
+            const captionText = 
+`🧾 <b>ভাড়ার রশিদ</b>
+━━━━━━━━━━━━━━━━━━
+👤 <b>নাম:</b> ${tenantName}
+🏠 <b>রুম নং:</b> ${roomNo}
+💰 <b>মোট পাওনা:</b> ${totalAmt}
+📅 <b>রশিদের তারিখ:</b> ${rDate}
+━━━━━━━━━━━━━━━━━━
+🗓 <b>পাঠানোর তারিখ:</b> ${sendDate}
+📆 <b>বার:</b> ${dayName}
+⏰ <b>সময়:</b> ${timeStr}
+━━━━━━━━━━━━━━━━━━`;
+
             canvas.toBlob(async (blob) => {
                 const formData = new FormData();
                 formData.append('chat_id', TG_CHAT_ID);
                 formData.append('photo', blob, fileName + ".png");
-                formData.append('caption', `ভাড়ার রশিদ: ${fileName}`);
+                formData.append('caption', captionText);
+                formData.append('parse_mode', 'HTML');
 
                 try {
                     const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendPhoto`, {
